@@ -1,0 +1,29 @@
+from os import path
+import sys
+
+PROJECT_ROOT = path.dirname(path.abspath(path.dirname(__file__)))
+
+sys.path.insert(0, "../../motor/")
+sys.path.insert(1, "apps/")
+
+try:
+    from YBAQNEXT.settings import *
+    from YBWEB.ctxJSON import DICTJSON
+except ImportError as exc:
+    print(exc)
+
+
+YEBO_APPS = ('portal', 'models')
+
+rest = open("config/rest.json").read()
+oRest = DICTJSON.fromJSON(rest)
+
+for app in oRest:
+    YEBO_APPS += (app, )
+
+INSTALLED_APPS += YEBO_APPS
+
+try:
+    from .local import *
+except ImportError:
+    pass
