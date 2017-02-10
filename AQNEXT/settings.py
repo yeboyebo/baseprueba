@@ -13,9 +13,9 @@ except ImportError as exc:
     print(exc)
 
 
-YEBO_APPS = ('portal', 'models')
+YEBO_APPS = ('models', )
 
-rest = open("config/rest.json").read()
+rest = open("config/urls.json").read()
 oRest = DICTJSON.fromJSON(rest)
 
 for app in oRest:

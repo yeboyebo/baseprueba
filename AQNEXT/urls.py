@@ -1,32 +1,53 @@
 from django.conf.urls import patterns, url, include
 from django.contrib import admin
 from django.conf import settings
-# from django.utils.importlib import import_module
-from YBUTILS import globalValues
+import importlib
 
-# INCLUIMOS RAIZ
+from YBUTILS import globalValues
+from YBUTILS.viewREST import routers
+from YBWEB.ctxJSON import DICTJSON
+
+
 def raiz(request):
     return ''
 
 
 urlpatterns = patterns('',)
+apps = globalValues.registraRest()
+sUrls = open("config/urls.json").read()
+oUrls = DICTJSON.fromJSON(sUrls)
 
-# INCLUIMOS URL DE NUESTRAS APLICACIONES
 for app in settings.YEBO_APPS:
-    if app != 'models' and app != 'portal':
-        urlpatterns += patterns(
-            '',
-            url(r'^{0}/'.format(app), include(app + '.urls_' + app, namespace=app)),
-            # url(r'^{0}/'.format(app), import_module(app + '.viewset.views'), name='appviews'),
-        )
+    if app != 'models':
+        views = importlib.import_module(app + ".viewset.views_" + app)
 
-# INCLUIMOS APLICACIONES POR DEFECTO EN EL RAIZ
+        if app in apps:
+            if app != "portal":
+                routerDef = routers.RESTDefaultRouterModel(aplicacion=app)
+                routerLayOut = routers.LayOutDefaultRouter(aplicacion=app)
+
+                for mod in apps[app]:
+                    routerDef.registerDynamic(mod)
+                    routerLayOut.registerDynamicModel(mod)
+
+                urlpatterns += patterns(
+                    '',
+                    url(r'^{0}/'.format(app), include(routerDef.urls)),
+                    url(r'^{0}/'.format(app), include(routerLayOut.urls)),
+                )
+
+            patt = r'^' if app == "portal" else r'^{0}/'.format(app)
+
+            for extUrl in oUrls[app]["external"]:
+                urlpatterns += patterns(
+                    app,
+                    url(r'{0}{1}'.format(patt, oUrls[app]["external"][extUrl]['url']), getattr(views, oUrls[app]["external"][extUrl]['func']), name=extUrl)
+                )
+
 urlpatterns += patterns(
     '',
     url(r'^admin/', admin.site.urls),
-    url(r'^', include('portal.urls_portal', namespace='portal')),
     url(r'^', include('YBLOGIN.urls', namespace='YBLOGIN')),
-    url(r'^', include('YBWEB.urls', namespace='YBWEB')),
 )
 
 urlpatterns += patterns(
