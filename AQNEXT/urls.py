@@ -19,7 +19,12 @@ oUrls = DICTJSON.fromJSON(sUrls)
 
 for app in settings.YEBO_APPS:
     if app != 'models':
-        views = importlib.import_module(app + ".viewset.views_" + app)
+        view = importlib.import_module(app + ".viewset.views_" + app)
+        objView = view.FormInternalObj()
+        objView._class_init()
+        views = objView.iface
+        objView.iface.ctx = views
+        objView.iface.iface = views
 
         if app in apps:
             if app != "portal":

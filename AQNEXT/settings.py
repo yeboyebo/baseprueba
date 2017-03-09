@@ -3,8 +3,8 @@ import sys
 
 PROJECT_ROOT = path.dirname(path.abspath(path.dirname(__file__)))
 
-sys.path.insert(0, "../../motor/")
-sys.path.insert(1, "apps/")
+sys.path.insert(0, path.join(PROJECT_ROOT, "../../motor/"))
+sys.path.insert(1, path.join(PROJECT_ROOT, "apps/"))
 
 try:
     from YBAQNEXT.settings import *
@@ -15,7 +15,7 @@ except ImportError as exc:
 
 YEBO_APPS = ('models', )
 
-rest = open("config/urls.json").read()
+rest = open(path.join(PROJECT_ROOT, "config/urls.json")).read()
 oRest = DICTJSON.fromJSON(rest)
 
 for app in oRest:
