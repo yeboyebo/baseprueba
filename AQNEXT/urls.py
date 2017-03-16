@@ -18,7 +18,18 @@ sUrls = open("config/urls.json").read()
 oUrls = DICTJSON.fromJSON(sUrls)
 
 for app in settings.YEBO_APPS:
-    if app != 'models':
+    if app == 'models':
+        routerDef = routers.RESTDefaultRouterModel()
+
+        for mod in apps[app]:
+            routerDef.registerDynamic(mod)
+
+        urlpatterns += patterns(
+            '',
+            url(r'^{0}/'.format(app), include(routerDef.urls)),
+        )
+
+    else:
         view = importlib.import_module(app + ".viewset.views_" + app)
         objView = view.FormInternalObj()
         objView._class_init()
@@ -26,28 +37,24 @@ for app in settings.YEBO_APPS:
         objView.iface.ctx = views
         objView.iface.iface = views
 
-        if app in apps:
-            if app != "portal":
-                routerDef = routers.RESTDefaultRouterModel(aplicacion=app)
-                routerLayOut = routers.LayOutDefaultRouter(aplicacion=app)
+        if app != "portal":
+            routerLayOut = routers.LayOutDefaultRouter(aplicacion=app)
 
-                for mod in apps[app]:
-                    routerDef.registerDynamic(mod)
-                    routerLayOut.registerDynamicModel(mod)
+            for mod in apps['models']:
+                routerLayOut.registerDynamicModel(mod)
 
-                urlpatterns += patterns(
-                    '',
-                    url(r'^{0}/'.format(app), include(routerDef.urls)),
-                    url(r'^{0}/'.format(app), include(routerLayOut.urls)),
-                )
+            urlpatterns += patterns(
+                '',
+                url(r'^{0}/'.format(app), include(routerLayOut.urls)),
+            )
 
-            patt = r'^' if app == "portal" else r'^{0}/'.format(app)
+        patt = r'^' if app == "portal" else r'^{0}/'.format(app)
 
-            for extUrl in oUrls[app]["external"]:
-                urlpatterns += patterns(
-                    app,
-                    url(r'{0}{1}'.format(patt, oUrls[app]["external"][extUrl]['url']), getattr(views, oUrls[app]["external"][extUrl]['func']), name=extUrl)
-                )
+        for extUrl in oUrls[app]:
+            urlpatterns += patterns(
+                app,
+                url(r'{0}{1}'.format(patt, oUrls[app][extUrl]['url']), getattr(views, oUrls[app][extUrl]['func']), name=extUrl)
+            )
 
 urlpatterns += patterns(
     '',

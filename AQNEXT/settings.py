@@ -13,7 +13,7 @@ except ImportError as exc:
     print(exc)
 
 
-YEBO_APPS = ('models', )
+YEBO_APPS = ()
 
 rest = open(path.join(PROJECT_ROOT, "config/urls.json")).read()
 oRest = DICTJSON.fromJSON(rest)
