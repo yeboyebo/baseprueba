@@ -66,5 +66,3 @@ urlpatterns += patterns(
     '',
     url(r'^$', raiz, name="root")
 )
-
-globalValues.registrarmodulos()
