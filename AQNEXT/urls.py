@@ -1,3 +1,4 @@
+from os import path
 from django.conf.urls import patterns, url, include
 from django.contrib import admin
 from django.conf import settings
@@ -14,7 +15,7 @@ def raiz(request):
 
 urlpatterns = patterns('',)
 apps = globalValues.registraRest()
-sUrls = open("config/urls.json").read()
+sUrls = open(path.join(settings.PROJECT_ROOT, "config/urls.json")).read()
 oUrls = DICTJSON.fromJSON(sUrls)
 
 for app in settings.YEBO_APPS:
@@ -47,6 +48,18 @@ for app in settings.YEBO_APPS:
                 '',
                 url(r'^{0}/'.format(app), include(routerLayOut.urls)),
             )
+        else:
+            routerLayOut = routers.LayOutDefaultRouter(aplicacion="system")
+            for mod in apps['models']:
+                routerLayOut.registerDynamicModel(mod)
+
+            routerSystem = routers.SystemRouter(aplicacion="system")
+            routerSystem.registerDynamicModel("system")
+            urlpatterns += patterns(
+                '',
+                url(r'^{0}/'.format("system"), include(routerSystem.urls)),
+                url(r'^{0}/'.format("system"), include(routerLayOut.urls)),
+            )
 
         patt = r'^' if app == "portal" else r'^{0}/'.format(app)
 
@@ -60,9 +73,12 @@ urlpatterns += patterns(
     '',
     url(r'^admin/', admin.site.urls),
     url(r'^', include('YBLOGIN.urls', namespace='YBLOGIN')),
+    url(r'^', include('YBSYSTEM.urls', namespace='YBSYSTEM')),
 )
 
 urlpatterns += patterns(
     '',
     url(r'^$', raiz, name="root")
 )
+
+globalValues.registrarmodulos()
