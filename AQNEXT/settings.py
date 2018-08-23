@@ -22,7 +22,6 @@ for app in oRest:
     YEBO_APPS += (app, )
 
 INSTALLED_APPS += YEBO_APPS
-# INSTALLED_APPS += ('djcelery', )
 
 try:
     from .local import *
